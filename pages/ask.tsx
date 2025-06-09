@@ -9,6 +9,7 @@ export default function AskPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setResponse('')
 
     try {
       const res = await fetch('/api/ask', {
@@ -19,7 +20,7 @@ export default function AskPage() {
 
       const data = await res.json()
       setResponse(data.response)
-    } catch (error) {
+    } catch (err) {
       setResponse("Erreur lors de l'envoi de la question.")
     }
 
@@ -29,7 +30,8 @@ export default function AskPage() {
   return (
     <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
       <h1>Poser une question de mathématiques</h1>
-      <form onSubmit={handleSubmit} style={{ marginBottom: '1rem' }}>
+
+      <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '1rem' }}>
           <label>
             Niveau :{' '}
@@ -40,9 +42,10 @@ export default function AskPage() {
             </select>
           </label>
         </div>
+
         <div style={{ marginBottom: '1rem' }}>
           <label>
-            Question :{' '}
+            Question :
             <br />
             <textarea
               value={question}
@@ -53,13 +56,14 @@ export default function AskPage() {
             />
           </label>
         </div>
+
         <button type="submit" disabled={loading}>
           {loading ? 'Chargement...' : 'Envoyer'}
         </button>
       </form>
 
       {response && (
-        <div>
+        <div style={{ marginTop: '2rem' }}>
           <h2>Réponse de l’IA :</h2>
           <p>{response}</p>
         </div>
