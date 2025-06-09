@@ -1,41 +1,23 @@
-import { useState } from 'react'
+import type { NextApiRequest, NextApiResponse } from 'next'
+import OpenAI from 'openai'
+import { supabase } from '../../lib/supabaseClient'
 
-export default function AskPage() {
-  const [question, setQuestion] = useState('')
-  const [level, setLevel] = useState('Grade 9')
-  const [response, setResponse] = useState<string | null>(null)
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! })
 
-  const handleSubmit = async () => {
-    const res = await fetch('/api/ask', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question, level }),
-    })
-    const data = await res.json()
-    setResponse(data.response)
-  }
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const { question, level } = req.body
 
-  return (
-    <div style={{ padding: '2rem' }}>
-      <h2>Pose ta question</h2>
-      <select value={level} onChange={(e) => setLevel(e.target.value)}>
-        <option>Grade 7</option>
-        <option>Grade 8</option>
-        <option>Grade 9</option>
-        <option>Grade 10</option>
-      </select>
-      <textarea
-        rows={4}
-        value={question}
-        onChange={(e) => setQuestion(e.target.value)}
-        placeholder="Ex : Je ne comprends pas le théorème de Thalès"
-      />
-      <button onClick={handleSubmit}>Envoyer</button>
-      {response && (
-        <div style={{ marginTop: '2rem', background: '#eee', padding: '1rem' }}>
-          <strong>Réponse :</strong> <p>{response}</p>
-        </div>
-      )}
-    </div>
-  )
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4-turbo',
+    messages: [
+      { role: 'system', content: `Tu es un professeur de mathématiques bienveillant pour un élève de niveau ${level}.` },
+      { role: 'user', content: question }
+    ],
+  })
+
+  const responseText = completion.choices[0]?.message?.content || ''
+
+  await supabase.from('questions').insert([{ content: question, level, response: responseText }])
+
+  res.status(200).json({ response: responseText })
 }
