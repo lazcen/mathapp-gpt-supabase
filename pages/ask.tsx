@@ -1,5 +1,4 @@
-'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function AskPage() {
   const [question, setQuestion] = useState('')
@@ -68,4 +67,9 @@ export default function AskPage() {
       )}
     </main>
   )
+}
+
+// Empêche Next.js de générer statiquement cette page
+export async function getServerSideProps() {
+  return { props: {} }
 }
