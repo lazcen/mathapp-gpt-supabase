@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next'
+console.log('Clé OpenAI détectée :', process.env.OPENAI_API_KEY ? '✅' : '❌ manquante')
 import OpenAI from 'openai'
 
 const openai = new OpenAI({
