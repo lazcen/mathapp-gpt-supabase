@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { Configuration, OpenAIApi } from 'openai'
+import OpenAI from 'openai'
 import { supabase } from '../../lib/supabaseClient'
 
 const openai = new OpenAIApi(
