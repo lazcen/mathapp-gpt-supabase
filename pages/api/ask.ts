@@ -29,6 +29,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(200).json({ response: answer })
   } catch (error: any) {
     console.error('Erreur OpenAI:', error)
-    res.status(500).json({ error: 'Erreur serveur OpenAI' })
+
+    // Ajout d'un message plus clair pour le frontend
+    res.status(500).json({
+      error: 'Erreur serveur OpenAI',
+      details: error.message || error.toString(),
+    })
   }
 }
