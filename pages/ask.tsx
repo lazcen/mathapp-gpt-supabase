@@ -1,33 +1,58 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
-import OpenAI from 'openai'
-import { supabase } from '../lib/supabaseClient'
+import { useState } from 'react';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-})
+export default function AskPage() {
+  const [question, setQuestion] = useState('');
+  const [level, setLevel] = useState('collège');
+  const [response, setResponse] = useState('');
+  const [loading, setLoading] = useState(false);
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { question, level } = req.body
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-4-turbo',
-    messages: [
-      {
-        role: 'system',
-        content: `Tu es un professeur de mathématiques bienveillant pour un élève de niveau ${level}.`,
-      },
-      {
-        role: 'user',
-        content: question,
-      },
-    ],
-  })
+    const res = await fetch('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question, level }),
+    });
 
-  const responseText = completion.choices[0]?.message?.content || ''
+    const data = await res.json();
+    setResponse(data.response);
+    setLoading(false);
+  };
 
-  await supabase.from('questions').insert([
-    { content: question, level, response: responseText },
-  ])
-
-  res.status(200).json({ response: responseText })
+  return (
+    <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
+      <h1>Poser une question de mathématiques</h1>
+      <form onSubmit={handleSubmit} style={{ marginBottom: '1rem' }}>
+        <div>
+          <label>Niveau : </label>
+          <select value={level} onChange={(e) => setLevel(e.target.value)}>
+            <option value="collège">Collège</option>
+            <option value="lycée">Lycée</option>
+            <option value="université">Université</option>
+          </select>
+        </div>
+        <div style={{ marginTop: '1rem' }}>
+          <label>Question : </label>
+          <br />
+          <textarea
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            rows={4}
+            cols={50}
+          />
+        </div>
+        <button type="submit" disabled={loading} style={{ marginTop: '1rem' }}>
+          {loading ? 'Chargement...' : 'Envoyer'}
+        </button>
+      </form>
+      {response && (
+        <div>
+          <h2>Réponse de l'IA :</h2>
+          <p>{response}</p>
+        </div>
+      )}
+    </div>
+  );
 }
