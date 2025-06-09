@@ -1,9 +1,8 @@
-// pages/api/ask.ts
-import type { NextApiRequest, NextApiResponse } from 'next'
-import { OpenAI } from 'openai'
+import { NextApiRequest, NextApiResponse } from 'next'
+import OpenAI from 'openai'
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY, // Ne jamais exposer côté client
+  apiKey: process.env.OPENAI_API_KEY,
 })
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -14,24 +13,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { question, level } = req.body
 
   if (!question || !level) {
-    return res.status(400).json({ error: 'Paramètres manquants' })
+    return res.status(400).json({ error: 'Question et niveau requis' })
   }
 
   try {
-    const completion = await openai.chat.completions.create({
+    const response = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
-        {
-          role: 'user',
-          content: `Explique cette question à un élève de niveau ${level} : ${question}`,
-        },
+        { role: 'system', content: `Tu es un professeur de maths de niveau collège, niveau ${level}` },
+        { role: 'user', content: question },
       ],
     })
 
-    const response = completion.choices[0].message?.content ?? 'Pas de réponse générée.'
-    res.status(200).json({ response })
+    const answer = response.choices[0]?.message?.content || 'Pas de réponse.'
+    res.status(200).json({ response: answer })
   } catch (error: any) {
     console.error('Erreur OpenAI:', error)
-    res.status(500).json({ error: 'Erreur lors de la génération de la réponse' })
+    res.status(500).json({ error: 'Erreur serveur OpenAI' })
   }
 }
