@@ -1,5 +1,4 @@
-'use client'
-
+// components/AskPage.tsx
 import { useState } from 'react'
 
 export default function AskPage() {
