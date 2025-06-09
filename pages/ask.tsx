@@ -11,15 +11,22 @@ export default function AskPage() {
     setLoading(true)
     setAnswer('')
 
-    const res = await fetch('/api/ask', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question, level }),
-    })
+    try {
+      const res = await fetch('/api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, level }),
+      })
 
-    const data = await res.json()
-    setAnswer(data.response)
-    setLoading(false)
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Erreur inconnue')
+      setAnswer(data.response)
+    } catch (err) {
+      setAnswer("Une erreur est survenue. Veuillez réessayer.")
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -28,14 +35,14 @@ export default function AskPage() {
       <form onSubmit={handleSubmit}>
         <label>
           Niveau :
-          <select value={level} onChange={(e) => setLevel(e.target.value)}>
+          <select value={level} onChange={(e) => setLevel(e.target.value)} style={{ marginLeft: '0.5rem' }}>
             <option value="6e">6e</option>
             <option value="5e">5e</option>
             <option value="4e">4e</option>
             <option value="3e">3e</option>
           </select>
         </label>
-        <br />
+        <br /><br />
         <label>
           Question :
           <textarea
@@ -43,10 +50,10 @@ export default function AskPage() {
             onChange={(e) => setQuestion(e.target.value)}
             required
             rows={4}
-            style={{ width: '100%' }}
+            style={{ width: '100%', marginTop: '0.5rem' }}
           />
         </label>
-        <br />
+        <br /><br />
         <button type="submit" disabled={loading}>
           {loading ? 'Chargement...' : 'Envoyer'}
         </button>
