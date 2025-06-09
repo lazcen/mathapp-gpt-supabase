@@ -61,3 +61,6 @@ export default function AskPage() {
     </main>
   )
 }
+export const getServerSideProps = async () => {
+  return { props: {} }
+}
