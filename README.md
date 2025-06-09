@@ -1,0 +1,1 @@
+# mathapp-gpt-supabase
