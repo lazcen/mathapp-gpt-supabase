@@ -11,15 +11,21 @@ export default function AskPage() {
     setLoading(true)
     setAnswer('')
 
-    const res = await fetch('/api/ask', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question, level }),
-    })
+    try {
+      const res = await fetch('/api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, level }),
+      })
 
-    const data = await res.json()
-    setAnswer(data.response)
-    setLoading(false)
+      const data = await res.json()
+      setAnswer(data.response)
+    } catch (err) {
+      setAnswer("Erreur lors de la récupération de la réponse.")
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -61,6 +67,6 @@ export default function AskPage() {
     </main>
   )
 }
-export const getServerSideProps = async () => {
-  return { props: {} }
-}
+
+// 🚫 Empêche le prerender statique pour éviter les erreurs avec fetch/Promise
+export const dynamic = 'force-dynamic'
