@@ -20,20 +20,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const response = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
-        { role: 'system', content: `Tu es un professeur de maths de niveau collège, niveau ${level}` },
+        { role: 'system', content: `Tu es un professeur de maths de niveau collège. Réponds à une question de niveau ${level}.` },
         { role: 'user', content: question },
       ],
     })
 
-    const answer = response.choices[0]?.message?.content || 'Pas de réponse.'
-    res.status(200).json({ response: answer })
+    const answer = response.choices?.[0]?.message?.content || 'Pas de réponse générée.'
+    return res.status(200).json({ response: answer })
+
   } catch (error: any) {
     console.error('Erreur OpenAI:', error)
 
-    // Ajout d'un message plus clair pour le frontend
-    res.status(500).json({
+    // Retourne les détails de l'erreur pour aider au débogage
+    return res.status(500).json({
       error: 'Erreur serveur OpenAI',
-      details: error.message || error.toString(),
+      details: error?.message || JSON.stringify(error),
     })
   }
 }
